@@ -37,6 +37,8 @@ interface Match {
   round: number
   player1Id: string
   player2Id: string
+  player1Points?: number
+  player2Points?: number
   result?: "player1" | "player2" | "draw"
   gameResults?: ("player1" | "player2")[]
   isBye?: boolean
