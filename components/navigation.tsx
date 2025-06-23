@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Home, Users, Play, Trophy, Clock, Settings, Menu, Gamepad2 } from "lucide-react"
+import { Home, Users, Play, Trophy, Clock, Settings, Menu, Gamepad2, History } from "lucide-react"
 
 interface Tournament {
   id: string
@@ -48,6 +48,7 @@ const navigationItems = [
   { href: "/rounds", label: "Rounds", icon: Play },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/timer", label: "Timer", icon: Clock },
+  { href: "/history", label: "History", icon: History },
   { href: "/setup", label: "Setup", icon: Settings },
 ]
 
