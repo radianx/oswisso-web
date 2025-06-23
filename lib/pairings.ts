@@ -53,6 +53,8 @@ export function generateSwissPairings(players: Player[], round: number, existing
         player2Id: "",
         isBye: true,
         result: "player1",
+        player1Points: 3,
+        player2Points: 0,
       })
     }
 
@@ -117,6 +119,8 @@ export function generateSwissPairings(players: Player[], round: number, existing
       player2Id: "",
       isBye: true,
       result: "player1",
+      player1Points: 3,
+      player2Points: 0,
     })
   }
 

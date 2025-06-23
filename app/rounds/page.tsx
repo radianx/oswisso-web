@@ -299,62 +299,56 @@ export default function RoundsPage() {
                     {currentRoundMatches.map((match, index) => (
                       <div key={match.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
-                              {index + 1}
-                            </div>
-                            <div>
-                              {match.isBye ? (
-                                <div className="font-medium">
-                                  {getPlayerName(match.player1Id)} <Badge variant="secondary">BYE</Badge>
-                                </div>
-                              ) : (
-                                <div className="font-medium">
-                                  {getPlayerName(match.player1Id)} vs {getPlayerName(match.player2Id)}
-                                </div>
-                              )}
-                            </div>
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
+                            {index + 1}
                           </div>
-                                <div className="flex items-center space-x-2">
-                                <span>{getPlayerName(match.player1Id)}</span>
-                                <ScoreButton
-                                  value={match.player1Points || 0}
-                                  onIncrement={() =>
-                                    updateMatchPoints(
-                                      match.id,
-                                      (match.player1Points || 0) + 1,
-                                      match.player2Points || 0,
-                                    )
-                                  }
-                                  onReset={() =>
-                                    updateMatchPoints(
-                                      match.id,
-                                      0,
-                                      match.player2Points || 0,
-                                    )
-                                  }
-                                />
-                                <span className="mx-1">vs.</span>
-                                <ScoreButton
-                                  value={match.player2Points || 0}
-                                  onIncrement={() =>
-                                    updateMatchPoints(
-                                      match.id,
-                                      match.player1Points || 0,
-                                      (match.player2Points || 0) + 1,
-                                    )
-                                  }
-                                  onReset={() =>
-                                    updateMatchPoints(
-                                      match.id,
-                                      match.player1Points || 0,
-                                      0,
-                                    )
-                                  }
-                                />
-                                <span>{getPlayerName(match.player2Id)}</span>
-                              </div>
-
+                          {match.isBye ? (
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{getPlayerName(match.player1Id)}</span>
+                              <Badge variant="secondary">BYE</Badge>
+                              <span className="ml-2">3 pts</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <span>{getPlayerName(match.player1Id)}</span>
+                              <ScoreButton
+                                value={match.player1Points || 0}
+                                onIncrement={() =>
+                                  updateMatchPoints(
+                                    match.id,
+                                    (match.player1Points || 0) + 1,
+                                    match.player2Points || 0,
+                                  )
+                                }
+                                onReset={() =>
+                                  updateMatchPoints(
+                                    match.id,
+                                    0,
+                                    match.player2Points || 0,
+                                  )
+                                }
+                              />
+                              <span className="mx-1">vs.</span>
+                              <ScoreButton
+                                value={match.player2Points || 0}
+                                onIncrement={() =>
+                                  updateMatchPoints(
+                                    match.id,
+                                    match.player1Points || 0,
+                                    (match.player2Points || 0) + 1,
+                                  )
+                                }
+                                onReset={() =>
+                                  updateMatchPoints(
+                                    match.id,
+                                    match.player1Points || 0,
+                                    0,
+                                  )
+                                }
+                              />
+                              <span>{getPlayerName(match.player2Id)}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
