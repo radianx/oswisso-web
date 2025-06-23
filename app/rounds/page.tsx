@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
+
 import { ArrowLeft, Play, Clock, Trophy } from "lucide-react"
 import Link from "next/link"
 import { generateSwissPairings, Player, Match } from "@/lib/pairings"
@@ -22,9 +21,54 @@ interface Tournament {
   roundStartTime?: number
 }
 
+function ScoreButton({
+  value,
+  onIncrement,
+  onReset,
+}: {
+  value: number
+  onIncrement: () => void
+  onReset: () => void
+}) {
+  let timer: NodeJS.Timeout | null = null
+
+  const start = () => {
+    timer = setTimeout(() => {
+      onReset()
+      timer = null
+    }, 500)
+  }
+
+  const end = () => {
+    if (timer) {
+      clearTimeout(timer)
+      onIncrement()
+    }
+  }
+
+  return (
+    <button
+      onMouseDown={start}
+      onMouseUp={end}
+      onMouseLeave={end}
+      onTouchStart={(e) => {
+        e.preventDefault()
+        start()
+      }}
+      onTouchEnd={(e) => {
+        e.preventDefault()
+        end()
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+      className="px-2 py-1 border rounded w-8 text-center select-none"
+    >
+      {value}
+    </button>
+  )
+}
+
 export default function RoundsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
-  const [gameInputs, setGameInputs] = useState<Record<string, string>>({})
 
   useEffect(() => {
     fetch("/api/tournament")
@@ -60,16 +104,21 @@ export default function RoundsPage() {
     saveTournament(updatedTournament)
   }
 
-  const updateMatchResult = (
+  const updateMatchPoints = (
     matchId: string,
-    result: "player1" | "player2" | "draw",
-    gameResults: ("player1" | "player2")[] = [],
+    player1Points: number,
+    player2Points: number,
   ) => {
     if (!tournament) return
 
     const updatedMatches = tournament.matches.map((match) => {
       if (match.id === matchId) {
-        return { ...match, result, gameResults }
+        let result: "player1" | "player2" | "draw" | undefined
+        if (player1Points > player2Points) result = "player1"
+        else if (player2Points > player1Points) result = "player2"
+        else if (player1Points === player2Points && player1Points > 0)
+          result = "draw"
+        return { ...match, player1Points, player2Points, result }
       }
       return match
     })
@@ -100,14 +149,15 @@ export default function RoundsPage() {
           points += 3
           matchWins += 1
           gameWins += 2
-        } else if (match.result === "draw") {
-          points += 1
-          matchDraws += 1
-        } else if ((isPlayer1 && match.result === "player1") || (!isPlayer1 && match.result === "player2")) {
-          points += 3
-          matchWins += 1
         } else {
-          matchLosses += 1
+          const p1 = match.player1Points || 0
+          const p2 = match.player2Points || 0
+          const playerPoints = isPlayer1 ? p1 : p2
+          const oppPoints = isPlayer1 ? p2 : p1
+          points += playerPoints
+          if (playerPoints > oppPoints) matchWins += 1
+          else if (playerPoints < oppPoints) matchLosses += 1
+          else matchDraws += 1
         }
 
         if (!match.isBye && match.gameResults) {
@@ -265,47 +315,46 @@ export default function RoundsPage() {
                               )}
                             </div>
                           </div>
+                                <div className="flex items-center space-x-2">
+                                <span>{getPlayerName(match.player1Id)}</span>
+                                <ScoreButton
+                                  value={match.player1Points || 0}
+                                  onIncrement={() =>
+                                    updateMatchPoints(
+                                      match.id,
+                                      (match.player1Points || 0) + 1,
+                                      match.player2Points || 0,
+                                    )
+                                  }
+                                  onReset={() =>
+                                    updateMatchPoints(
+                                      match.id,
+                                      0,
+                                      match.player2Points || 0,
+                                    )
+                                  }
+                                />
+                                <span className="mx-1">vs.</span>
+                                <ScoreButton
+                                  value={match.player2Points || 0}
+                                  onIncrement={() =>
+                                    updateMatchPoints(
+                                      match.id,
+                                      match.player1Points || 0,
+                                      (match.player2Points || 0) + 1,
+                                    )
+                                  }
+                                  onReset={() =>
+                                    updateMatchPoints(
+                                      match.id,
+                                      match.player1Points || 0,
+                                      0,
+                                    )
+                                  }
+                                />
+                                <span>{getPlayerName(match.player2Id)}</span>
+                              </div>
 
-                          {!match.isBye && (
-                            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-                              {match.result ? (
-                                <Badge variant="default">
-                                  {match.result === "draw"
-                                    ? `Draw${match.gameResults ? ` (${match.gameResults.filter(g => g === "player1").length}-${match.gameResults.filter(g => g === "player2").length})` : ""}`
-                                    : `${getPlayerName(match.result === "player1" ? match.player1Id : match.player2Id)} Wins${match.gameResults ? ` (${match.gameResults.filter(g => g === "player1").length}-${match.gameResults.filter(g => g === "player2").length})` : ""}`}
-                                </Badge>
-                              ) : (
-                                <>
-                                  <Input
-                                    placeholder="player1, player2"
-                                    value={gameInputs[match.id] || ""}
-                                    onChange={(e) =>
-                                      setGameInputs({ ...gameInputs, [match.id]: e.target.value })
-                                    }
-                                    className="sm:w-40"
-                                  />
-                                  <Select
-                                    onValueChange={(value) => {
-                                      const games = (gameInputs[match.id] || "")
-                                        .split(",")
-                                        .map((g) => g.trim())
-                                        .filter((g) => g === "player1" || g === "player2") as ("player1" | "player2")[]
-                                      updateMatchResult(match.id, value as any, games)
-                                    }}
-                                  >
-                                    <SelectTrigger className="w-40">
-                                      <SelectValue placeholder="Select result" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="player1">{getPlayerName(match.player1Id)} Wins</SelectItem>
-                                      <SelectItem value="player2">{getPlayerName(match.player2Id)} Wins</SelectItem>
-                                      <SelectItem value="draw">Draw</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}
