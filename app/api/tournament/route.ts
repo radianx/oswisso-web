@@ -20,3 +20,12 @@ export async function POST(req: NextRequest) {
   )
   return NextResponse.json({ status: 'ok' })
 }
+
+export async function DELETE(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get('id')
+  if (!id) {
+    return NextResponse.json({ message: 'Id required' }, { status: 400 })
+  }
+  db.prepare('DELETE FROM tournaments WHERE id = ?').run(id)
+  return NextResponse.json({ status: 'ok' })
+}
