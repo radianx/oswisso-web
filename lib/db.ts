@@ -1,9 +1,10 @@
 import Database from 'better-sqlite3'
 
-const db = new Database('tournament.db')
+// Increase the busy timeout to reduce "database is locked" errors during builds
+const db = new Database('tournament.db', { timeout: 5000 })
 
-// Use Write-Ahead Logging to avoid database locking issues
-db.prepare('PRAGMA journal_mode = WAL').run()
+// Use Write-Ahead Logging for better concurrency
+db.pragma('journal_mode = WAL')
 
 db.prepare(
   `CREATE TABLE IF NOT EXISTS tournaments (

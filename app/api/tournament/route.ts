@@ -40,17 +40,23 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const id = body.id || 'current'
   const data = JSON.stringify(body)
-  db.prepare('INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)').run(
-    id,
-    data,
+
+  const insertTournament = db.prepare(
+    'INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)',
   )
-  // Track the active tournament
-  if (id !== 'current') {
-    db.prepare('INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)').run(
-      'current',
-      JSON.stringify({ id }),
-    )
-  }
+  const insertCurrent = db.prepare(
+    'INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)',
+  )
+
+  const save = db.transaction((tournamentId: string, payload: string) => {
+    insertTournament.run(tournamentId, payload)
+    if (tournamentId !== 'current') {
+      insertCurrent.run('current', JSON.stringify({ id: tournamentId }))
+    }
+  })
+
+  save(id, data)
+
   return NextResponse.json({ status: 'ok' })
 }
 
@@ -59,6 +65,9 @@ export async function DELETE(req: NextRequest) {
   if (!id) {
     return NextResponse.json({ message: 'Id required' }, { status: 400 })
   }
-  db.prepare('DELETE FROM tournaments WHERE id = ?').run(id)
+  const del = db.prepare('DELETE FROM tournaments WHERE id = ?')
+  db.transaction((tournamentId: string) => {
+    del.run(tournamentId)
+  })(id)
   return NextResponse.json({ status: 'ok' })
 }
