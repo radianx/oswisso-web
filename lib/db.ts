@@ -2,7 +2,8 @@ import Database from 'better-sqlite3'
 
 const db = new Database('tournament.db')
 
-db.pragma('journal_mode = WAL')
+// Use Write-Ahead Logging to avoid database locking issues
+db.prepare('PRAGMA journal_mode = WAL').run()
 
 db.prepare(
   `CREATE TABLE IF NOT EXISTS tournaments (
