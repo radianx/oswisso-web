@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import db from '@/lib/db'
 
+// Ensure this handler runs in the Node.js runtime
+export const runtime = 'nodejs'
+
 export async function GET() {
   const rows = db.prepare('SELECT id, data FROM tournaments ORDER BY id DESC').all()
   const tournaments = rows.map((row: any) => {

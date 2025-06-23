@@ -52,7 +52,7 @@ export default function SetupPage() {
   const [rounds, setRounds] = useState("4")
   const [timePerRound, setTimePerRound] = useState("50")
 
-  const handleCreateTournament = () => {
+  const handleCreateTournament = async () => {
     if (!tournamentName.trim()) return
 
     const tournament: Tournament = {
@@ -66,13 +66,20 @@ export default function SetupPage() {
       timePerRound: Number.parseInt(timePerRound),
     }
 
-    fetch("/api/tournament", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(tournament),
-    }).then(() => {
-      router.push("/players")
-    })
+    try {
+      const res = await fetch("/api/tournament", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tournament),
+      })
+      if (res.ok) {
+        router.push("/players")
+      } else {
+        console.error("Failed to create tournament")
+      }
+    } catch (err) {
+      console.error("Failed to create tournament", err)
+    }
   }
 
   return (
