@@ -106,7 +106,7 @@ export default function PlayersPage() {
   };
 
   const removePlayer = (playerId: string) => {
-    if (!tournament) return;
+    if (!tournament || tournament.status !== "setup") return;
 
     const updatedTournament = {
       ...tournament,
@@ -245,14 +245,16 @@ export default function PlayersPage() {
                             <Button variant="ghost" size="sm" onClick={() => startEditing(player)}>
                               Edit
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removePlayer(player.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {tournament.status === "setup" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removePlayer(player.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         )}
                       </div>
