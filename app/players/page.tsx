@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useDebounce } from "@/lib/useDebounce"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -48,6 +49,8 @@ export default function PlayersPage() {
   const router = useRouter()
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [newPlayerName, setNewPlayerName] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const debouncedSearch = useDebounce(searchTerm, 300)
 
   useEffect(() => {
     fetch("/api/tournament")
@@ -122,6 +125,10 @@ export default function PlayersPage() {
     return <div>Loading...</div>
   }
 
+  const filteredPlayers = tournament.players.filter((p) =>
+    p.nickname.toLowerCase().includes(debouncedSearch.toLowerCase())
+  )
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -152,14 +159,27 @@ export default function PlayersPage() {
                 <CardDescription>Players registered for this tournament</CardDescription>
               </CardHeader>
               <CardContent>
+                <Input
+                  placeholder="Search players"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="mb-4"
+                />
                 {tournament.players.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No players registered yet. Add players to get started.
                   </div>
+                ) : filteredPlayers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No players match your search.
+                  </div>
                 ) : (
                   <div className="space-y-2">
-                    {tournament.players.map((player, index) => (
-                      <div key={player.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    {filteredPlayers.map((player, index) => (
+                      <div
+                        key={player.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
                             {index + 1}
