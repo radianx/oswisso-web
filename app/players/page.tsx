@@ -50,17 +50,24 @@ export default function PlayersPage() {
   const [newPlayerName, setNewPlayerName] = useState("")
 
   useEffect(() => {
-    const savedTournament = localStorage.getItem("tournament")
-    if (savedTournament) {
-      setTournament(JSON.parse(savedTournament))
-    } else {
-      router.push("/setup")
-    }
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setTournament(data)
+        } else {
+          router.push("/setup")
+        }
+      })
   }, [router])
 
   const saveTournament = (updatedTournament: Tournament) => {
     setTournament(updatedTournament)
-    localStorage.setItem("tournament", JSON.stringify(updatedTournament))
+    fetch("/api/tournament", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedTournament),
+    })
   }
 
   const addPlayer = () => {

@@ -43,23 +43,25 @@ export default function TimerPage() {
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    const savedTournament = localStorage.getItem("tournament");
-    if (savedTournament) {
-      const parsed = JSON.parse(savedTournament);
-      setTournament(parsed);
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((parsed) => {
+        if (parsed) {
+          setTournament(parsed);
 
-      if (parsed.roundStartTime) {
-        const elapsed = Date.now() - parsed.roundStartTime;
-        const remaining = Math.max(
-          0,
-          parsed.timePerRound * 60 * 1000 - elapsed
-        );
-        setTimeRemaining(remaining);
-        setIsRunning(remaining > 0);
-      } else {
-        setTimeRemaining(parsed.timePerRound * 60 * 1000);
-      }
-    }
+          if (parsed.roundStartTime) {
+            const elapsed = Date.now() - parsed.roundStartTime;
+            const remaining = Math.max(
+              0,
+              parsed.timePerRound * 60 * 1000 - elapsed
+            );
+            setTimeRemaining(remaining);
+            setIsRunning(remaining > 0);
+          } else {
+            setTimeRemaining(parsed.timePerRound * 60 * 1000);
+          }
+        }
+      });
   }, []);
 
   useEffect(() => {

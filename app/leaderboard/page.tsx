@@ -52,10 +52,11 @@ export default function LeaderboardPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
 
   useEffect(() => {
-    const savedTournament = localStorage.getItem("tournament")
-    if (savedTournament) {
-      setTournament(JSON.parse(savedTournament))
-    }
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setTournament(data)
+      })
   }, [])
 
   const calculateTiebreakers = (players: Player[], matches: Match[]): PlayerWithTiebreakers[] => {

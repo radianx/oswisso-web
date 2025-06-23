@@ -25,15 +25,22 @@ export default function RoundsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
 
   useEffect(() => {
-    const savedTournament = localStorage.getItem("tournament")
-    if (savedTournament) {
-      setTournament(JSON.parse(savedTournament))
-    }
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setTournament(data)
+        }
+      })
   }, [])
 
   const saveTournament = (updatedTournament: Tournament) => {
     setTournament(updatedTournament)
-    localStorage.setItem("tournament", JSON.stringify(updatedTournament))
+    fetch("/api/tournament", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedTournament),
+    })
   }
 
 
