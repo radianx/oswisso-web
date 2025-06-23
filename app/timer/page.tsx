@@ -41,6 +41,8 @@ export default function TimerPage() {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const hasPairings =
+    tournament?.matches.some((m) => m.round === tournament.currentRound) || false;
 
   useEffect(() => {
     fetch("/api/tournament")
@@ -105,7 +107,7 @@ export default function TimerPage() {
   };
 
   const handleStart = () => {
-    if (timeRemaining > 0) {
+    if (timeRemaining > 0 && hasPairings) {
       setIsRunning(true);
       setIsPaused(false);
     }
@@ -130,12 +132,18 @@ export default function TimerPage() {
           Time Remaining:{" "}
           {new Date(timeRemaining).toISOString().substr(11, 8)}
         </p>
+        {!hasPairings && (
+          <p className="text-red-600 text-sm mt-2">
+            Generate pairings before starting the timer.
+          </p>
+        )}
       </div>
       <div className="mt-4">
         {!isRunning && (
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
             onClick={handleStart}
+            disabled={!hasPairings}
           >
             Start
           </button>
