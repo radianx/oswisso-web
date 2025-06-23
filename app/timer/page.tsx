@@ -1,6 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, Play, Pause, RotateCcw } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Tournament {
   id: string;
@@ -114,54 +124,66 @@ export default function TimerPage() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Round Timer</h1>
-      {tournament && (
-        <div>
-          <p>
-            <strong>Tournament:</strong> {tournament.name}
-          </p>
-          <p>
-            <strong>Round:</strong> {tournament.currentRound} /{" "}
-            {tournament.rounds}
-          </p>
+    <div className="container mx-auto p-6">
+      <div className="max-w-md mx-auto space-y-6">
+        <div className="flex items-center space-x-4">
+          <Link href="/rounds">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">Round Timer</h1>
+            {tournament && (
+              <p className="text-muted-foreground">
+                {tournament.name} – Round {tournament.currentRound} / {tournament.rounds}
+              </p>
+            )}
+          </div>
         </div>
-      )}
-      <div className="mt-4">
-        <p className="text-xl">
-          Time Remaining:{" "}
-          {new Date(timeRemaining).toISOString().substr(11, 8)}
-        </p>
-        {!hasPairings && (
-          <p className="text-red-600 text-sm mt-2">
-            Generate pairings before starting the timer.
-          </p>
-        )}
-      </div>
-      <div className="mt-4">
-        {!isRunning && (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-            onClick={handleStart}
-            disabled={!hasPairings}
-          >
-            Start
-          </button>
-        )}
-        {isRunning && (
-          <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded"
-            onClick={handlePauseResume}
-          >
-            {isPaused ? "Resume" : "Pause"}
-          </button>
-        )}
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded ml-2"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-center">Time Remaining</CardTitle>
+            <CardDescription className="text-center">
+              {hasPairings
+                ? "Manage the current round's time"
+                : "Generate pairings before starting the timer"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="text-6xl font-mono font-bold">
+                {new Date(timeRemaining).toISOString().substr(11, 8)}
+              </div>
+            </div>
+            <div className="flex justify-center space-x-2">
+              {!isRunning ? (
+                <Button onClick={handleStart} disabled={!hasPairings}>
+                  <Play className="mr-2 h-4 w-4" />
+                  Start
+                </Button>
+              ) : (
+                <Button variant="secondary" onClick={handlePauseResume}>
+                  {isPaused ? (
+                    <>
+                      <Play className="mr-2 h-4 w-4" /> Resume
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="mr-2 h-4 w-4" /> Pause
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button variant="outline" onClick={handleReset}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
