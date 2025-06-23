@@ -1,80 +1,86 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useDebounce } from "@/lib/useDebounce"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Plus, Trash2, Users, Play } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useDebounce } from "@/lib/useDebounce";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Plus, Trash2, Users, Play } from "lucide-react";
+import Link from "next/link";
 
 interface Tournament {
-  id: string
-  name: string
-  rounds: number
-  currentRound: number
-  status: "setup" | "active" | "completed"
-  players: Player[]
-  matches: Match[]
-  timePerRound: number
-  roundStartTime?: number
+  id: string;
+  name: string;
+  rounds: number;
+  currentRound: number;
+  status: "setup" | "active" | "completed";
+  players: Player[];
+  matches: Match[];
+  timePerRound: number;
+  roundStartTime?: number;
 }
 
 interface Player {
-  id: string
-  nickname: string
-  points: number
-  matchWins: number
-  matchLosses: number
-  matchDraws: number
-  gameWins: number
-  gameLosses: number
-  opponentIds: string[]
+  id: string;
+  nickname: string;
+  points: number;
+  matchWins: number;
+  matchLosses: number;
+  matchDraws: number;
+  gameWins: number;
+  gameLosses: number;
+  opponentIds: string[];
 }
 
 interface Match {
-  id: string
-  round: number
-  player1Id: string
-  player2Id: string
-  result?: "player1" | "player2" | "draw"
-  gameResults?: ("player1" | "player2")[]
-  isBye?: boolean
+  id: string;
+  round: number;
+  player1Id: string;
+  player2Id: string;
+  result?: "player1" | "player2" | "draw";
+  gameResults?: ("player1" | "player2")[];
+  isBye?: boolean;
 }
 
 export default function PlayersPage() {
-  const router = useRouter()
-  const [tournament, setTournament] = useState<Tournament | null>(null)
-  const [newPlayerName, setNewPlayerName] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const debouncedSearch = useDebounce(searchTerm, 300)
+  const router = useRouter();
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     fetch("/api/tournament")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) {
-          setTournament(data)
+          setTournament(data);
         } else {
-          router.push("/setup")
+          router.push("/setup");
         }
-      })
-  }, [router])
+      });
+  }, [router]);
 
   const saveTournament = (updatedTournament: Tournament) => {
-    setTournament(updatedTournament)
+    setTournament(updatedTournament);
     fetch("/api/tournament", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedTournament),
-    })
-  }
+    });
+  };
 
   const addPlayer = () => {
-    if (!tournament || !newPlayerName.trim()) return
+    if (!tournament || !newPlayerName.trim()) return;
 
     const newPlayer: Player = {
       id: Date.now().toString(),
@@ -86,48 +92,48 @@ export default function PlayersPage() {
       gameWins: 0,
       gameLosses: 0,
       opponentIds: [],
-    }
+    };
 
     const updatedTournament = {
       ...tournament,
       players: [...tournament.players, newPlayer],
-    }
+    };
 
-    saveTournament(updatedTournament)
-    setNewPlayerName("")
-  }
+    saveTournament(updatedTournament);
+    setNewPlayerName("");
+  };
 
   const removePlayer = (playerId: string) => {
-    if (!tournament) return
+    if (!tournament) return;
 
     const updatedTournament = {
       ...tournament,
       players: tournament.players.filter((p) => p.id !== playerId),
-    }
+    };
 
-    saveTournament(updatedTournament)
-  }
+    saveTournament(updatedTournament);
+  };
 
   const startTournament = () => {
-    if (!tournament || tournament.players.length < 2) return
+    if (!tournament || tournament.players.length < 2) return;
 
     const updatedTournament = {
       ...tournament,
       status: "active" as const,
       currentRound: 1,
-    }
+    };
 
-    saveTournament(updatedTournament)
-    router.push("/rounds")
-  }
+    saveTournament(updatedTournament);
+    router.push("/rounds");
+  };
 
   if (!tournament) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   const filteredPlayers = tournament.players.filter((p) =>
-    p.nickname.toLowerCase().includes(debouncedSearch.toLowerCase())
-  )
+    p.nickname.toLowerCase().includes(debouncedSearch.toLowerCase()),
+  );
 
   return (
     <div className="container mx-auto p-6">
@@ -156,7 +162,9 @@ export default function PlayersPage() {
                   <Users className="mr-2 h-5 w-5" />
                   Registered Players
                 </CardTitle>
-                <CardDescription>Players registered for this tournament</CardDescription>
+                <CardDescription>
+                  Players registered for this tournament
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Input
@@ -206,7 +214,9 @@ export default function PlayersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Add Player</CardTitle>
-                <CardDescription>Register a new player for the tournament</CardDescription>
+                <CardDescription>
+                  Register a new player for the tournament
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -219,7 +229,11 @@ export default function PlayersPage() {
                     onKeyPress={(e) => e.key === "Enter" && addPlayer()}
                   />
                 </div>
-                <Button onClick={addPlayer} disabled={!newPlayerName.trim()} className="w-full">
+                <Button
+                  onClick={addPlayer}
+                  disabled={!newPlayerName.trim()}
+                  className="w-full"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Player
                 </Button>
@@ -234,7 +248,9 @@ export default function PlayersPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Players:</span>
-                    <span className="font-medium">{tournament.players.length}</span>
+                    <span className="font-medium">
+                      {tournament.players.length}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Rounds:</span>
@@ -242,16 +258,23 @@ export default function PlayersPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Time per Round:</span>
-                    <span className="font-medium">{tournament.timePerRound} min</span>
+                    <span className="font-medium">
+                      {tournament.timePerRound} min
+                    </span>
                   </div>
                 </div>
 
-                {tournament.players.length >= 2 && tournament.status === "setup" && (
-                  <Button onClick={startTournament} className="w-full" size="lg">
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Tournament
-                  </Button>
-                )}
+                {tournament.players.length >= 2 &&
+                  tournament.status === "setup" && (
+                    <Button
+                      onClick={startTournament}
+                      className="w-full"
+                      size="lg"
+                    >
+                      <Play className="mr-2 h-4 w-4" />
+                      Start Tournament
+                    </Button>
+                  )}
 
                 {tournament.players.length < 2 && (
                   <p className="text-sm text-muted-foreground text-center">
@@ -264,5 +287,5 @@ export default function PlayersPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
