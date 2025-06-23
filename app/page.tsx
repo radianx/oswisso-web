@@ -44,12 +44,16 @@ interface Match {
 export default function HomePage() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
+  const [showPrompt, setShowPrompt] = useState(false)
 
   useEffect(() => {
-    fetch("/api/tournament")
+    fetch("/api/tournament?id=current")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data) setTournament(data)
+        if (data) {
+          setTournament(data)
+          setShowPrompt(true)
+        }
       })
   }, [])
 
@@ -82,7 +86,7 @@ export default function HomePage() {
       .slice(0, 3)
   }
 
-  if (!tournament) {
+  if (!tournament && !showPrompt) {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center space-y-6">
@@ -101,6 +105,38 @@ export default function HomePage() {
                 <Button className="w-full" size="lg">
                   <Settings className="mr-2 h-4 w-4" />
                   Create Tournament
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (showPrompt && tournament) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold">TCG Tournament Manager</h1>
+            <p className="text-xl text-muted-foreground">Fast Swiss System Tournaments</p>
+          </div>
+
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>Resume Tournament</CardTitle>
+              <CardDescription>Continue the current event or start a new one</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button className="w-full" size="lg" onClick={() => setShowPrompt(false)}>
+                <Play className="mr-2 h-4 w-4" />
+                Continue "{tournament.name}"
+              </Button>
+              <Link href="/setup">
+                <Button variant="outline" className="w-full" size="lg">
+                  <Settings className="mr-2 h-4 w-4" />
+                  New Tournament
                 </Button>
               </Link>
             </CardContent>
