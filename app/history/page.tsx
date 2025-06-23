@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Trash2 } from "lucide-react"
 
 interface TournamentSummary {
   id: string
@@ -19,11 +20,20 @@ interface TournamentSummary {
 export default function HistoryPage() {
   const [tournaments, setTournaments] = useState<TournamentSummary[]>([])
 
-  useEffect(() => {
+  const loadTournaments = () => {
     fetch("/api/tournaments")
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setTournaments(data))
+  }
+
+  useEffect(() => {
+    loadTournaments()
   }, [])
+
+  const deleteTournament = async (id: string) => {
+    await fetch(`/api/tournament?id=${id}`, { method: "DELETE" })
+    loadTournaments()
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -56,10 +66,18 @@ export default function HistoryPage() {
                       <TableCell className="text-center">{t.players}</TableCell>
                       <TableCell className="text-center">{t.rounds}</TableCell>
                       <TableCell className="text-center">{t.matches}</TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/history/${t.id}`}>
+                      <TableCell className="text-right space-x-2">
+                        <Link href={`/history/${t.id}`} className="inline-block">
                           <Button size="sm" variant="outline">View</Button>
                         </Link>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteTournament(t.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -52,9 +52,11 @@ interface Match {
 }
 
 export default function PlayersPage() {
-  const router = useRouter();
-  const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [newPlayerName, setNewPlayerName] = useState("");
+  const router = useRouter()
+  const [tournament, setTournament] = useState<Tournament | null>(null)
+  const [newPlayerName, setNewPlayerName] = useState("")
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null)
+  const [editedName, setEditedName] = useState("")
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -113,6 +115,32 @@ export default function PlayersPage() {
 
     saveTournament(updatedTournament);
   };
+
+  const startEditing = (player: Player) => {
+    setEditingPlayerId(player.id)
+    setEditedName(player.nickname)
+  }
+
+  const cancelEditing = () => {
+    setEditingPlayerId(null)
+    setEditedName("")
+  }
+
+  const saveEditedName = () => {
+    if (!tournament || !editingPlayerId || !editedName.trim()) return
+
+    const updatedPlayers = tournament.players.map((p) =>
+      p.id === editingPlayerId ? { ...p, nickname: editedName.trim() } : p,
+    )
+
+    const updatedTournament = {
+      ...tournament,
+      players: updatedPlayers,
+    }
+
+    saveTournament(updatedTournament)
+    cancelEditing()
+  }
 
   const startTournament = () => {
     if (!tournament || tournament.players.length < 2) return;
@@ -192,16 +220,41 @@ export default function PlayersPage() {
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          <span className="font-medium">{player.nickname}</span>
+                          {editingPlayerId === player.id ? (
+                            <Input
+                              value={editedName}
+                              onChange={(e) => setEditedName(e.target.value)}
+                              onKeyPress={(e) => e.key === "Enter" && saveEditedName()}
+                              className="h-8"
+                            />
+                          ) : (
+                            <span className="font-medium">{player.nickname}</span>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePlayer(player.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {editingPlayerId === player.id ? (
+                          <div className="space-x-2">
+                            <Button size="sm" onClick={saveEditedName} disabled={!editedName.trim()}>
+                              Save
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={cancelEditing}>
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-x-2">
+                            <Button variant="ghost" size="sm" onClick={() => startEditing(player)}>
+                              Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removePlayer(player.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
