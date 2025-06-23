@@ -61,6 +61,7 @@ export default function PlayersPage() {
   const [editedName, setEditedName] = useState("")
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const [knownPlayers, setKnownPlayers] = useState<string[]>([])
 
   useEffect(() => {
     fetch("/api/tournament")
@@ -73,6 +74,12 @@ export default function PlayersPage() {
         }
       });
   }, [router]);
+
+  useEffect(() => {
+    fetch("/api/players")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setKnownPlayers(data));
+  }, []);
 
   const saveTournament = (updatedTournament: Tournament) => {
     setTournament(updatedTournament);
@@ -280,11 +287,21 @@ export default function PlayersPage() {
                   <Label htmlFor="player-name">Player Nickname</Label>
                   <Input
                     id="player-name"
+                    list="player-suggestions"
                     placeholder="Enter nickname"
                     value={newPlayerName}
                     onChange={(e) => setNewPlayerName(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && addPlayer()}
                   />
+                  <datalist id="player-suggestions">
+                    {knownPlayers
+                      .filter((n) =>
+                        n.toLowerCase().includes(newPlayerName.toLowerCase()),
+                      )
+                      .map((name) => (
+                        <option key={name} value={name} />
+                      ))}
+                  </datalist>
                 </div>
                 <Button
                   onClick={addPlayer}
