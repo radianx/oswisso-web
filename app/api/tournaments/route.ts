@@ -6,16 +6,21 @@ export const runtime = 'nodejs'
 
 export async function GET() {
   const rows = db.prepare('SELECT id, data FROM tournaments ORDER BY id DESC').all()
-  const tournaments = rows.map((row: any) => {
-    const t = JSON.parse(row.data)
-    return {
-      id: row.id,
-      name: t.name,
-      status: t.status,
-      rounds: t.rounds,
-      currentRound: t.currentRound,
-      players: t.players.length,
-      matches: t.matches.length,
+  const tournaments: any[] = []
+  rows.forEach((row: any) => {
+    try {
+      const t = JSON.parse(row.data)
+      tournaments.push({
+        id: row.id,
+        name: t.name,
+        status: t.status,
+        rounds: t.rounds,
+        currentRound: t.currentRound,
+        players: t.players.length,
+        matches: t.matches.length,
+      })
+    } catch (err) {
+      // Ignore malformed rows
     }
   })
   return NextResponse.json(tournaments)
