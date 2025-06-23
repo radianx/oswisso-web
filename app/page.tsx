@@ -46,11 +46,11 @@ export default function HomePage() {
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
 
   useEffect(() => {
-    // Load tournament from localStorage
-    const savedTournament = localStorage.getItem("tournament")
-    if (savedTournament) {
-      setTournament(JSON.parse(savedTournament))
-    }
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setTournament(data)
+      })
   }, [])
 
   useEffect(() => {

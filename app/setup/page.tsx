@@ -64,8 +64,13 @@ export default function SetupPage() {
       timePerRound: Number.parseInt(timePerRound),
     }
 
-    localStorage.setItem("tournament", JSON.stringify(tournament))
-    router.push("/players")
+    fetch("/api/tournament", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(tournament),
+    }).then(() => {
+      router.push("/players")
+    })
   }
 
   return (

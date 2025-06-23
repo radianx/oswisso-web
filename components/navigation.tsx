@@ -57,10 +57,11 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    const savedTournament = localStorage.getItem("tournament")
-    if (savedTournament) {
-      setTournament(JSON.parse(savedTournament))
-    }
+    fetch("/api/tournament")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setTournament(data)
+      })
   }, [pathname]) // Re-check when route changes
 
   const NavItems = ({ mobile = false }) => (
