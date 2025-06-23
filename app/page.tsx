@@ -131,7 +131,7 @@ export default function HomePage() {
             <CardContent className="space-y-4">
               <Button className="w-full" size="lg" onClick={() => setShowPrompt(false)}>
                 <Play className="mr-2 h-4 w-4" />
-                Continue "{tournament.name}"
+                Continue `&quot;`{tournament.name}`&quot;`
               </Button>
               <Link href="/setup">
                 <Button variant="outline" className="w-full" size="lg">
