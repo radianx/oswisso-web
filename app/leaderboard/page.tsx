@@ -108,12 +108,21 @@ export default function LeaderboardPage() {
 
     const sortedPlayers = calculateTiebreakers(tournament.players, tournament.matches)
 
-    const headers = ["Rank", "Player", "Points", "Match Record", "OMW%", "GWP%"]
+    const headers = [
+      "Rank",
+      "Player",
+      "Points",
+      "Match Record",
+      "Game Record",
+      "OMW%",
+      "GWP%",
+    ]
     const rows = sortedPlayers.map((player) => [
       player.rank.toString(),
       player.nickname,
       player.points.toString(),
       `${player.matchWins}-${player.matchLosses}-${player.matchDraws}`,
+      `${player.gameWins}-${player.gameLosses}`,
       player.omwPercentage.toFixed(1) + "%",
       player.gwpPercentage.toFixed(1) + "%",
     ])
@@ -217,6 +226,7 @@ export default function LeaderboardPage() {
                       <TableHead>Player</TableHead>
                       <TableHead className="text-center">Points</TableHead>
                       <TableHead className="text-center">Record</TableHead>
+                      <TableHead className="text-center">Games</TableHead>
                       <TableHead className="text-center">OMW%</TableHead>
                       <TableHead className="text-center">GWP%</TableHead>
                     </TableRow>
@@ -234,6 +244,9 @@ export default function LeaderboardPage() {
                         <TableCell className="text-center font-bold">{player.points}</TableCell>
                         <TableCell className="text-center">
                           {player.matchWins}-{player.matchLosses}-{player.matchDraws}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {player.gameWins}-{player.gameLosses}
                         </TableCell>
                         <TableCell className="text-center">{player.omwPercentage.toFixed(1)}%</TableCell>
                         <TableCell className="text-center">{player.gwpPercentage.toFixed(1)}%</TableCell>
