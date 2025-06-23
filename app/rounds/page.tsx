@@ -246,10 +246,11 @@ export default function RoundsPage() {
     if (!tournament || !canAdvanceRound()) return
 
     const nextRound = tournament.currentRound + 1
+    const isCompleted = nextRound > tournament.rounds
     const updatedTournament = {
       ...tournament,
-      currentRound: nextRound,
-      status: nextRound > tournament.rounds ? ("completed" as const) : tournament.status,
+      currentRound: isCompleted ? tournament.rounds : nextRound,
+      status: isCompleted ? ("completed" as const) : tournament.status,
       roundStartTime: undefined,
     }
 
