@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
 
+interface Tournament {
+  data: string; // Assuming `data` is a JSON string
+}
+
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id') || 'current'
-  let row = db.prepare('SELECT data FROM tournaments WHERE id = ?').get(id)
+  let row = db.prepare('SELECT data FROM tournaments WHERE id = ?').get(id) as Tournament | undefined;
 
   if (!row) {
     return NextResponse.json({ message: 'Not found' }, { status: 404 })
@@ -19,7 +23,7 @@ export async function GET(req: NextRequest) {
     data.id &&
     !data.status
   ) {
-    row = db.prepare('SELECT data FROM tournaments WHERE id = ?').get(data.id)
+    row = db.prepare('SELECT data FROM tournaments WHERE id = ?').get(data.id) as Tournament | undefined;
     if (!row) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
