@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import db from '@/lib/db'
 
+// `better-sqlite3` only works in the Node.js runtime
+export const runtime = 'nodejs'
+
 export async function GET() {
   const rows = db
     .prepare('SELECT data FROM tournaments WHERE id != ?')

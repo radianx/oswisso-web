@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
 
+// Use the Node.js runtime since we rely on the `better-sqlite3` package
+export const runtime = 'nodejs'
+
 interface Tournament {
   data: string; // Assuming `data` is a JSON string
 }
