@@ -93,8 +93,18 @@ export default function PlayersPage() {
   const addPlayer = () => {
     if (!tournament || !newPlayerName.trim()) return;
 
+    // Check if player with this nickname already exists in the tournament
+    const isDuplicate = tournament.players.some(
+      (p) => p.nickname.toLowerCase() === newPlayerName.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      alert(`Player "${newPlayerName.trim()}" is already in this tournament!`);
+      return;
+    }
+
     const newPlayer: Player = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       nickname: newPlayerName.trim(),
       points: 0,
       matchWins: 0,
@@ -295,9 +305,16 @@ export default function PlayersPage() {
                   />
                   <datalist id="player-suggestions">
                     {knownPlayers
-                      .filter((n) =>
-                        n.toLowerCase().includes(newPlayerName.toLowerCase()),
-                      )
+                      .filter((n) => {
+                        // Exclude players already in this tournament
+                        const isAlreadyAdded = tournament.players.some(
+                          (p) => p.nickname.toLowerCase() === n.toLowerCase()
+                        );
+                        return (
+                          !isAlreadyAdded &&
+                          n.toLowerCase().includes(newPlayerName.toLowerCase())
+                        );
+                      })
                       .map((name) => (
                         <option key={name} value={name} />
                       ))}

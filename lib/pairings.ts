@@ -35,9 +35,13 @@ export function generateSwissPairings(players: Player[], round: number, existing
   // For first round, pair randomly
   if (round === 1) {
     const shuffled = [...sortedPlayers].sort(() => Math.random() - 0.5)
-    for (let i = 0; i < shuffled.length - 1; i += 2) {
+
+    // Determine how many players to pair (exclude last one if odd)
+    const pairCount = Math.floor(shuffled.length / 2)
+
+    for (let i = 0; i < pairCount * 2; i += 2) {
       pairings.push({
-        id: `${round}-${i / 2 + 1}`,
+        id: crypto.randomUUID(),
         round,
         player1Id: shuffled[i].id,
         player2Id: shuffled[i + 1].id,
@@ -47,7 +51,7 @@ export function generateSwissPairings(players: Player[], round: number, existing
     // Handle bye if odd number of players
     if (shuffled.length % 2 === 1) {
       pairings.push({
-        id: `${round}-bye`,
+        id: crypto.randomUUID(),
         round,
         player1Id: shuffled[shuffled.length - 1].id,
         player2Id: "",
@@ -99,7 +103,7 @@ export function generateSwissPairings(players: Player[], round: number, existing
 
     if (paired_player) {
       pairings.push({
-        id: `${round}-${pairings.length + 1}`,
+        id: crypto.randomUUID(),
         round,
         player1Id: player1.id,
         player2Id: paired_player.id,
@@ -113,7 +117,7 @@ export function generateSwissPairings(players: Player[], round: number, existing
   const unpairedPlayer = sortedPlayers.find((p) => !paired.has(p.id))
   if (unpairedPlayer) {
     pairings.push({
-      id: `${round}-bye`,
+      id: crypto.randomUUID(),
       round,
       player1Id: unpairedPlayer.id,
       player2Id: "",

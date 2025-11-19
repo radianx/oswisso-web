@@ -117,6 +117,8 @@ export default function HomePage() {
   }
 
   if (showPrompt && tournament) {
+    const isCompleted = tournament.status === "completed"
+
     return (
       <div className="container mx-auto p-6">
         <div className="text-center space-y-6">
@@ -125,24 +127,77 @@ export default function HomePage() {
             <p className="text-xl text-muted-foreground">Fast Swiss System Tournaments</p>
           </div>
 
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle>Resume Tournament</CardTitle>
-              <CardDescription>Continue the current event or start a new one</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" size="lg" onClick={() => setShowPrompt(false)}>
-                <Play className="mr-2 h-4 w-4" />
-                Continue `&quot;`{tournament.name}`&quot;`
-              </Button>
-              <Link href="/setup">
-                <Button variant="outline" className="w-full" size="lg">
-                  <Settings className="mr-2 h-4 w-4" />
-                  New Tournament
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="max-w-md mx-auto space-y-4">
+            {isCompleted ? (
+              <>
+                {/* New Tournament - First option when no active tournament */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create New Tournament</CardTitle>
+                    <CardDescription>Start a fresh tournament</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link href="/setup">
+                      <Button className="w-full" size="lg">
+                        <Settings className="mr-2 h-4 w-4" />
+                        New Tournament
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+
+                {/* Completed Tournament - Separate card */}
+                <Card className="border-green-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-green-800">
+                      <Trophy className="mr-2 h-5 w-5" />
+                      Tournament Completed
+                    </CardTitle>
+                    <CardDescription>"{tournament.name}"</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link href="/leaderboard">
+                      <Button variant="outline" className="w-full" size="lg">
+                        View Results
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <>
+                {/* Active/Setup Tournament */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Resume Tournament</CardTitle>
+                    <CardDescription>Continue the current event</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full" size="lg" onClick={() => setShowPrompt(false)}>
+                      <Play className="mr-2 h-4 w-4" />
+                      Continue &quot;{tournament.name}&quot;
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* New Tournament option */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create New Tournament</CardTitle>
+                    <CardDescription>Start a fresh tournament</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link href="/setup">
+                      <Button variant="outline" className="w-full" size="lg">
+                        <Settings className="mr-2 h-4 w-4" />
+                        New Tournament
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
         </div>
       </div>
     )
@@ -164,8 +219,8 @@ export default function HomePage() {
         </Badge>
       </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Players</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -173,9 +228,9 @@ export default function HomePage() {
           <CardContent>
             <div className="text-2xl font-bold">{tournament!.players.length}</div>
           </CardContent>
-          </Card>
+        </Card>
 
-          <Card>
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Current Round</CardTitle>
             <Play className="h-4 w-4 text-muted-foreground" />
@@ -183,44 +238,44 @@ export default function HomePage() {
           <CardContent>
             <div className="text-2xl font-bold">{tournament!.currentRound}</div>
           </CardContent>
-          </Card>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Time Remaining</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {tournament!.status === "active" ? formatTime(timeRemaining) : "--:--"}
-              </div>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Time Remaining</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {tournament!.status === "active" ? formatTime(timeRemaining) : "--:--"}
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Leader</CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{topPlayers[0]?.nickname || "TBD"}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Leader</CardTitle>
+            <Trophy className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{topPlayers[0]?.nickname || "TBD"}</div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {tournament!.status === "active" && timeRemaining > 0 && (
-          <Card className="border-orange-200 bg-orange-50">
-            <CardHeader>
-              <CardTitle className="text-center text-orange-800">Round {tournament!.currentRound} in Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <div className="text-6xl font-mono font-bold text-orange-600 mb-2">{formatTime(timeRemaining)}</div>
-                <p className="text-orange-700">Time remaining this round</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {tournament!.status === "active" && timeRemaining > 0 && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <CardTitle className="text-center text-orange-800">Round {tournament!.currentRound} in Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-6xl font-mono font-bold text-orange-600 mb-2">{formatTime(timeRemaining)}</div>
+              <p className="text-orange-700">Time remaining this round</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

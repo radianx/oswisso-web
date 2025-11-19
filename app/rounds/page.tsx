@@ -385,10 +385,16 @@ export default function RoundsPage() {
                   </Button>
                 )}
 
-                {canAdvanceRound() && tournament.currentRound >= tournament.rounds && (
-                  <Button onClick={advanceRound} className="w-full">
-                    Complete Tournament
+                {tournament.status === "completed" ? (
+                  <Button disabled className="w-full">
+                    Tournament Completed
                   </Button>
+                ) : (
+                  canAdvanceRound() && tournament.currentRound >= tournament.rounds && (
+                    <Button onClick={advanceRound} className="w-full">
+                      Complete Tournament
+                    </Button>
+                  )
                 )}
               </CardContent>
             </Card>

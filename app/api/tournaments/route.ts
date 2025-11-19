@@ -1,27 +1,27 @@
 import { NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
-// Ensure this handler runs in the Node.js runtime
 export const runtime = 'nodejs'
 
 export async function GET() {
-  const rows = db.prepare('SELECT id, data FROM tournaments ORDER BY id DESC').all()
-  const tournaments: any[] = []
-  rows.forEach((row: any) => {
-    try {
-      const t = JSON.parse(row.data)
-      tournaments.push({
-        id: row.id,
-        name: t.name,
-        status: t.status,
-        rounds: t.rounds,
-        currentRound: t.currentRound,
-        players: t.players.length,
-        matches: t.matches.length,
-      })
-    } catch (err) {
-      // Ignore malformed rows
-    }
-  })
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*, players(count), matches(count)')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return NextResponse.json({ message: 'Error fetching tournaments' }, { status: 500 })
+  }
+
+  const tournaments = data.map((t: any) => ({
+    id: t.id,
+    name: t.name,
+    status: t.status,
+    rounds: t.rounds,
+    currentRound: t.current_round,
+    players: t.players?.[0]?.count || 0,
+    matches: t.matches?.[0]?.count || 0,
+  }))
+
   return NextResponse.json(tournaments)
 }

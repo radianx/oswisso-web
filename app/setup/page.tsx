@@ -56,7 +56,7 @@ export default function SetupPage() {
     if (!tournamentName.trim()) return
 
     const tournament: Tournament = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: tournamentName.trim(),
       rounds: Number.parseInt(rounds),
       currentRound: 0,
