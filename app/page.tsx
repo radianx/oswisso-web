@@ -153,7 +153,7 @@ export default function HomePage() {
                       <Trophy className="mr-2 h-5 w-5" />
                       Tournament Completed
                     </CardTitle>
-                    <CardDescription>"{tournament.name}"</CardDescription>
+                    <CardDescription>&quot;{tournament.name}&quot;</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Link href="/leaderboard">
