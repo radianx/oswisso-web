@@ -49,8 +49,11 @@ interface Match {
 export default function SetupPage() {
   const router = useRouter()
   const [tournamentName, setTournamentName] = useState("")
-  const [rounds, setRounds] = useState("4")
-  const [timePerRound, setTimePerRound] = useState("50")
+  const [rounds, setRounds] = useState("3")
+  const [timePerRound, setTimePerRound] = useState("45")
+
+  // Calculate max players for selected rounds: 2^rounds
+  const maxPlayersForRounds = Math.pow(2, Number(rounds))
 
   const handleCreateTournament = async () => {
     if (!tournamentName.trim()) return
@@ -122,25 +125,30 @@ export default function SetupPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="3">3 Rounds</SelectItem>
                     <SelectItem value="4">4 Rounds</SelectItem>
                     <SelectItem value="5">5 Rounds</SelectItem>
                     <SelectItem value="6">6 Rounds</SelectItem>
+                    <SelectItem value="7">7 Rounds</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  {rounds} rounds suggested for up to {maxPlayersForRounds} players
+                </p>
               </div>
 
               <div className="space-y-2">
+
                 <Label htmlFor="time-per-round">Time per Round (minutes)</Label>
                 <Select value={timePerRound} onValueChange={setTimePerRound}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="40">40 minutes</SelectItem>
-                    <SelectItem value="50">50 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
                     <SelectItem value="60">60 minutes</SelectItem>
                     <SelectItem value="75">75 minutes</SelectItem>
+                    <SelectItem value="90">90 minutes</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
