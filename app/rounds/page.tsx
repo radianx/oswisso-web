@@ -67,6 +67,8 @@ function ScoreButton({
   )
 }
 
+const MAX_POINTS_PER_ROUND = 3
+
 export default function RoundsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null)
 
@@ -113,12 +115,15 @@ export default function RoundsPage() {
 
     const updatedMatches = tournament.matches.map((match) => {
       if (match.id === matchId) {
+        const clampedPlayer1Points = Math.min(player1Points, MAX_POINTS_PER_ROUND)
+        const clampedPlayer2Points = Math.min(player2Points, MAX_POINTS_PER_ROUND)
+
         let result: "player1" | "player2" | "draw" | undefined
-        if (player1Points > player2Points) result = "player1"
-        else if (player2Points > player1Points) result = "player2"
-        else if (player1Points === player2Points && player1Points > 0)
+        if (clampedPlayer1Points > clampedPlayer2Points) result = "player1"
+        else if (clampedPlayer2Points > clampedPlayer1Points) result = "player2"
+        else if (clampedPlayer1Points === clampedPlayer2Points && clampedPlayer1Points > 0)
           result = "draw"
-        return { ...match, player1Points, player2Points, result }
+        return { ...match, player1Points: clampedPlayer1Points, player2Points: clampedPlayer2Points, result }
       }
       return match
     })
@@ -313,13 +318,15 @@ export default function RoundsPage() {
                               <span>{getPlayerName(match.player1Id)}</span>
                               <ScoreButton
                                 value={match.player1Points || 0}
-                                onIncrement={() =>
+                                onIncrement={() => {
+                                  const current = match.player1Points || 0
+                                  const next = current >= MAX_POINTS_PER_ROUND ? 0 : current + 1
                                   updateMatchPoints(
                                     match.id,
-                                    (match.player1Points || 0) + 1,
+                                    next,
                                     match.player2Points || 0,
                                   )
-                                }
+                                }}
                                 onReset={() =>
                                   updateMatchPoints(
                                     match.id,
@@ -331,13 +338,15 @@ export default function RoundsPage() {
                               <span className="mx-1">vs.</span>
                               <ScoreButton
                                 value={match.player2Points || 0}
-                                onIncrement={() =>
+                                onIncrement={() => {
+                                  const current = match.player2Points || 0
+                                  const next = current >= MAX_POINTS_PER_ROUND ? 0 : current + 1
                                   updateMatchPoints(
                                     match.id,
                                     match.player1Points || 0,
-                                    (match.player2Points || 0) + 1,
+                                    next,
                                   )
-                                }
+                                }}
                                 onReset={() =>
                                   updateMatchPoints(
                                     match.id,
