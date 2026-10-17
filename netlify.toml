@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Netlify automatically installs its maintained Next.js adapter.
+# Configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+# in Netlify for both Builds and Functions, including Deploy Previews.
