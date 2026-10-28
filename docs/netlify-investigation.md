@@ -2,8 +2,12 @@
 
 ## Conclusion
 
-The hosted failure is **not diagnosed**. No reproducible application or adapter
-build defect was found in PR head `0de8645b12bda3bbfbd1b26f22f10a15eb68b8e4`.
+The **new hosted failure is diagnosed**: deploy
+[6ae25c710c8a39f8f7115575](https://app.netlify.com/projects/torneocartonero/deploys/6ae25c710c8a39f8f7115575),
+commit `04e08ff7f250e2ba660ca67ec41613781f160aba`, fails because at least one
+required Supabase public variable is absent or empty during the build. The
+historical October 17 failure remains undiagnosed. No reproducible application
+or adapter build defect was found in PR head `0de8645b12bda3bbfbd1b26f22f10a15eb68b8e4`.
 Keep #26 in draft pending a successful hosted Netlify preview and real browser
 validation against disposable Supabase. Preserve all existing security updates.
 
@@ -28,13 +32,46 @@ validation against disposable Supabase. Preserve all existing security updates.
   The actual active production deployment and its installed versions remain
   unverified.
 
+## New remote evidence after pushing the validation changes
+
+The new preview exposed an expandable public build log. Its Building section
+(lines 73–89) shows successful compilation, followed by page-data collection
+and `Error: Missing Supabase environment variables` from
+`.next/server/app/api/tournament/route.js`, then
+`Failed to collect page data for /api/tournament`. The command exits 1; Netlify
+reports stage exit 2. This directly matches the local missing-variable
+reproduction. The guard in `lib/supabase.ts` checks both values together, so the
+log does **not** distinguish which variable is missing, empty, incorrectly
+scoped, or withheld from this deploy context. No database request is needed to
+trigger this error.
+
+Initializing confirms Node **22.23.4**, npm **10.9.9**, successful installation of
+631 packages and Next **15.5.28**. Building confirms @netlify/build **37.7.0**,
+Next Runtime **5.16.3**, root `/opt/build/repo/netlify.toml`, `deploy-preview`
+context, no restored Next cache, and a UI-installed `@netlify/plugin-nextjs`.
+The resolved environment lists `NETLIFY_NEXT_PLUGIN_SKIP` and `REVIEW_ID`; their
+values are not shown. The skip flag needs review before declaring adapter
+runtime validation complete, but it did not produce the observed missing-env
+exception. This build stops before Functions bundling/upload.
+
+**Required remediation:** an authorized Netlify administrator must make both
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` available to this
+preview in Builds and Functions, using a disposable Supabase project, then
+rebuild. Check contextual overrides and PR-variable withholding rules without
+disabling those protections globally. Do not put real keys or fake production
+fallbacks into the repository. The current unauthenticated session cannot
+inspect or change those account settings. No credentials were accessed.
+
+The new failure establishes the current blocker. It does not establish that
+the inaccessible October 17 log had the same cause.
+
 ## Configuration and hypotheses
 
 | Item | Observed | What remains unknown |
 | --- | --- | --- |
-| Supabase | `lib/supabase.ts` throws at import without both public variables. Next imports API modules during page-data collection. Missing-variable build reproduced. | Whether the failed remote build had both values in its effective context/scopes. |
-| Node | `.nvmrc` specifies 22; engines require >=22. Local Node 22.23.4 succeeds. | Remote Node/npm and Functions runtime, effective base directory, any overriding settings. No Node failure demonstrated. |
-| Adapter | Recognized root `netlify.toml`, build `npm run build`, publish `.next`, no legacy plugin pin, default Next config, nodejs API routes. Automatic local adapter 5.16.3 succeeds. | Adapter version and dashboard plugin/config overrides used by the historical failed build. No adapter failure demonstrated. |
+| Supabase | `lib/supabase.ts` throws at import without both public variables. Next imports API modules during page-data collection. Missing-variable build reproduced. | New preview proves at least one absent/empty at build time; exact variable and scope/withholding cause still require account access. Historical configuration unknown. |
+| Node | `.nvmrc` specifies 22; engines require >=22. Local Node 22.23.4 succeeds. | New build uses Node 22.23.4/npm 10.9.9 and the repository root. Functions runtime remains untested. No Node failure demonstrated. |
+| Adapter | Recognized root `netlify.toml`, build `npm run build`, publish `.next`, no legacy plugin pin, default Next config, nodejs API routes. Automatic local adapter 5.16.3 succeeds. | New build uses 5.16.3 with a UI plugin and an unresolved NETLIFY_NEXT_PLUGIN_SKIP flag. Historical settings unknown. No adapter failure demonstrated. |
 | Fonts | Build uses `next/font/google` Inter and needs outbound font downloads. Local builds succeed. | Remote download errors, if any. No font failure demonstrated. |
 
 Netlify recommends automatic adapter updates for Next >=13.5:
@@ -94,8 +131,8 @@ Record these non-secret settings alongside it:
 - If build/packaging passes but upload fails, the deploy error and phase. If the
   deploy publishes but requests fail, request IDs and sanitized Function logs.
 
-No Supabase, Node or adapter cause should be assigned until that evidence
-matches the observed error.
+The new preview has a proven Supabase configuration failure. Do not assign a
+Node/adapter cause or infer the historical cause without matching log evidence.
 
 ## Merge and production gates
 
