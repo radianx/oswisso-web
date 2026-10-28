@@ -1,70 +1,80 @@
-import db from '../lib/db'
+import { NextRequest } from 'next/server'
+import { POST } from '../app/api/tournament/route'
+import { supabase } from '../lib/supabase'
 
-interface Tournament {
-  id: string
-  name: string
-  rounds: number
-  currentRound: number
-  status: 'setup' | 'active' | 'completed'
-  players: Player[]
-  matches: any[]
-  timePerRound: number
+jest.mock('../lib/supabase', () => ({
+  supabase: { from: jest.fn() },
+}))
+
+const from = jest.mocked(supabase.from)
+
+const tournament = {
+  id: 't1',
+  name: 'Test',
+  rounds: 1,
+  currentRound: 1,
+  status: 'setup',
+  timePerRound: 30,
+  players: [{
+    id: 'p1',
+    nickname: 'Updated nickname',
+    points: 0,
+    matchWins: 0,
+    matchLosses: 0,
+    matchDraws: 0,
+    gameWins: 0,
+    gameLosses: 0,
+    opponentIds: [],
+  }],
+  matches: [],
 }
 
-interface Player {
-  id: string
-  nickname: string
-  points: number
-  matchWins: number
-  matchLosses: number
-  matchDraws: number
-  gameWins: number
-  gameLosses: number
-  opponentIds: string[]
+function request() {
+  return new NextRequest('http://localhost/api/tournament', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(tournament),
+  })
 }
 
-const basePlayer: Omit<Player, 'id' | 'nickname'> = {
-  points: 0,
-  matchWins: 0,
-  matchLosses: 0,
-  matchDraws: 0,
-  gameWins: 0,
-  gameLosses: 0,
-  opponentIds: [],
-}
+describe('nickname updates through the tournament API', () => {
+  beforeEach(() => jest.clearAllMocks())
+  afterEach(() => jest.restoreAllMocks())
 
-describe('nickname updates', () => {
-  beforeEach(() => {
-    db.prepare('DELETE FROM tournaments').run()
+  test('sends the updated nickname to tournament players and the global directory', async () => {
+    const saveTournament = jest.fn().mockResolvedValue({ error: null })
+    const savePlayers = jest.fn().mockResolvedValue({ error: null })
+    const saveGlobalPlayers = jest.fn().mockResolvedValue({ error: null })
+    from
+      .mockReturnValueOnce({ upsert: saveTournament } as unknown as ReturnType<typeof supabase.from>)
+      .mockReturnValueOnce({ upsert: savePlayers } as unknown as ReturnType<typeof supabase.from>)
+      .mockReturnValueOnce({ upsert: saveGlobalPlayers } as unknown as ReturnType<typeof supabase.from>)
+
+    const response = await POST(request())
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ status: 'ok' })
+    expect(from.mock.calls).toEqual([['tournaments'], ['players'], ['global_players']])
+    expect(savePlayers).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'p1', tournament_id: 't1', nickname: 'Updated nickname' }),
+    ])
+    expect(saveGlobalPlayers).toHaveBeenCalledWith([
+      expect.objectContaining({ nickname: 'Updated nickname', updated_at: expect.any(String) }),
+    ], { onConflict: 'nickname' })
   })
 
-  test('updates are persisted in the database', () => {
-    const tournament: Tournament = {
-      id: 't1',
-      name: 'Test',
-      rounds: 1,
-      currentRound: 1,
-      status: 'setup',
-      players: [{ id: 'p1', nickname: 'Old', ...basePlayer }],
-      matches: [],
-      timePerRound: 0,
-    }
+  test('reports a failed player save instead of returning success', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    const saveTournament = jest.fn().mockResolvedValue({ error: null })
+    const savePlayers = jest.fn().mockResolvedValue({ error: { message: 'Database unavailable' } })
+    from
+      .mockReturnValueOnce({ upsert: saveTournament } as unknown as ReturnType<typeof supabase.from>)
+      .mockReturnValueOnce({ upsert: savePlayers } as unknown as ReturnType<typeof supabase.from>)
 
-    db.prepare('INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)').run(
-      tournament.id,
-      JSON.stringify(tournament),
-    )
+    const response = await POST(request())
 
-    tournament.players[0].nickname = 'New'
-    db.prepare('INSERT OR REPLACE INTO tournaments (id, data) VALUES (?, ?)').run(
-      tournament.id,
-      JSON.stringify(tournament),
-    )
-
-    const row = db.prepare('SELECT data FROM tournaments WHERE id = ?').get(
-      tournament.id,
-    )
-    const saved = JSON.parse(row.data)
-    expect(saved.players[0].nickname).toBe('New')
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ message: 'Error saving players' })
+    expect(from).not.toHaveBeenCalledWith('global_players')
   })
 })
