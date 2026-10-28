@@ -48,6 +48,21 @@ Inter font from Google. Successful unit tests and a build do not replace a
 preview check of creating a tournament, editing a nickname, generating rounds,
 recording scores, and opening history against a disposable Supabase project.
 
+For an isolated production-server HTTP smoke check (Node 22, no real credentials):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 \
+NEXT_PUBLIC_SUPABASE_ANON_KEY=test-only-anon-key npm run build
+node scripts/smoke-production.mjs
+```
+
+The script requires ports 54321 and 3100 to be free and refuses builds without
+the test values. It starts an in-memory PostgREST stub and the production server,
+checks pages/assets/RSC and tournament API persistence, then stops both. It does
+not verify browser interactions, SQL constraints, RLS, or the Netlify runtime.
+See [the Netlify investigation](docs/netlify-investigation.md) for evidence and
+the remaining merge and production checks.
+
 Next.js and `eslint-config-next` stay on the same patched Next 15 release.
 The PostCSS override replaces Next's pinned 8.4.31 with a patched 8.x version
 (including the fix for GHSA-fxqj-rqcc-2cmp). Recheck this override when upgrading
